@@ -9,3 +9,5 @@ Projects:
 - **ml-decision-tree/**: Churn classification via DecisionTree and RandomForest with evaluation metrics.
 - **ml-unsupervised/**: K-means with PCA visualization and cluster profiling.
 - **web-scraper/**: BeautifulSoup-based scraper that reads a local mock HTML and exports a CSV.
+- **feature-scaling-demo/**: Demonstrates the effect of `StandardScaler` and `MinMaxScaler` on numeric data.  
+  Includes visual comparisons of scaled distributions and saves plots to `/plots/`.
