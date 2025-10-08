@@ -1,0 +1,164 @@
+---
+R Script: Forecasting & ROAS Analysis for Jetski Business
+---
+
+```{r}
+library(tidyverse)
+library(lubridate)
+library(forecast)
+library(tseries)
+```
+
+```{r}
+# Load data
+daily_revenue <- read_csv("cleaned_daily_revenue.csv")
+daily_spend <- read_csv("cleaned_daily_ad_spend.csv")
+merged <- read_csv("merged_revenue_adspend.csv")
+```
+
+```{r}
+# Clean and prepare dates
+daily_revenue <- daily_revenue %>% mutate(Date = ymd(Date)) %>% arrange(Date)
+daily_revenue <- daily_revenue %>% filter(month(Date) <= 10)
+daily_revenue$Total_Revenue <- pmin(daily_revenue$Total_Revenue, quantile(daily_revenue$Total_Revenue, 0.95))
+daily_spend <- daily_spend %>% mutate(Date = ymd(Date))
+merged <- merged %>% mutate(Date = ymd(Date)) %>% arrange(Date)
+daily_spend <- daily_spend %>% filter(month(Date) <= 10)
+merged <- merged %>% filter(month(Date) <= 10)
+
+
+# Isolate peak revenue months
+peak_daily <- daily_revenue %>%
+  mutate(Date = ymd(Date)) %>%
+  filter(Date >= as.Date("2024-06-01") & Date <= as.Date("2024-08-31")) %>%
+  group_by(Date) %>%
+  summarise(Revenue = sum(Total_Revenue, na.rm = TRUE)) %>%
+  arrange(Date)
+```
+
+```{r}
+# Create Time Series
+ts_peak <- ts(peak_daily$Revenue, frequency = 7) # Daily data with weekly seasonality
+```
+
+```{r}
+# Check for stationarity
+adf_result <- adf.test(ts_peak)
+print(adf_result)
+
+```
+
+```{r}
+# ARIMA
+fit_arima <- auto.arima(ts_peak, seasonal = TRUE)
+summary(fit_arima)
+
+# ETS model
+fit_ets <- ets(ts_peak)
+summary(fit_ets)
+```
+
+```{r}
+# Forecasting 30 days ahead
+forecast_h <- 30
+start_forecast <- max(peak_daily$Date) + 1
+forecast_dates <- seq.Date(from = start_forecast, by = "day", length.out = forecast_h)
+
+forecast_arima <- forecast(fit_arima, h = forecast_h)
+forecast_ets <- forecast(fit_ets, h = forecast_h)
+```
+
+```{r}
+# Create data frames for forecast
+df_arima <- tibble(
+  Date = forecast_dates,
+  Forecast = as.numeric(forecast_arima$mean),
+  Lo95 = as.numeric(forecast_arima$lower[,2]),
+  Hi95 = as.numeric(forecast_arima$upper[,2]),
+  Model = "ARIMA"
+)
+
+df_ets <- tibble(
+  Date = forecast_dates,
+  Forecast = as.numeric(forecast_ets$mean),
+  Lo95 = as.numeric(forecast_ets$lower[,2]),
+  Hi95 = as.numeric(forecast_ets$upper[,2]),
+  Model = "ETS"
+)
+# Combined forecast df for ribbons
+forecast_df <- bind_rows(df_arima, df_ets)
+
+```
+
+```{r}
+# Prepare data for plotting
+# Actual values
+actual_df <- peak_daily %>%
+  mutate(Model = "Actual", Value = Revenue) %>%
+  select(Date, Value, Model)
+
+```
+
+```{r}
+# Forecasted values for plot (with uncertainty)
+forecast_plot_df <- forecast_df %>%
+  rename(Value = Forecast) %>%
+  select(Date, Value, Model, Lo95, Hi95)
+```
+
+```{r}
+# Combined plot data
+plot_data <- bind_rows(actual_df, forecast_plot_df)
+
+weekend_bands <- plot_data %>%
+  filter(wday(Date, label = TRUE) %in% c("Sat", "Sun")) %>%
+  distinct(Date) %>%
+  mutate(
+    start = Date,
+    end = Date + 1
+  )
+```
+
+```{r}
+ggplot(plot_data, aes(x = Date, y = Value, color = Model)) +
+  geom_line(size = 1.2) +
+  geom_ribbon(
+    data = forecast_plot_df,
+    aes(x = Date, ymin = Lo95, ymax = Hi95, fill = Model),
+    alpha = 0.3,
+    inherit.aes = FALSE,
+    show.legend = FALSE
+  ) +
+  geom_vline(xintercept = start_forecast, linetype = "dashed", color = "gray40") +
+  labs(
+    title = "Jetski Daily Revenue: 30-Day Forecast (ARIMA vs ETS)",
+    subtitle = "Trained only on June–August 2024",
+    x = "Date",
+    y = "Revenue (USD)"
+  ) +
+  geom_rect(
+  data = weekend_bands,
+  inherit.aes = FALSE,
+  aes(xmin = start, xmax = end, ymin = -Inf, ymax = Inf),
+  fill = "lightgray", alpha = 0.2
+  ) +
+  scale_color_manual(
+    values = c("Actual" = "black", "ARIMA" = "dodgerblue", "ETS" = "darkgreen")
+  ) +
+  scale_fill_manual(
+    values = c("ARIMA" = "dodgerblue", "ETS" = "darkgreen")
+  ) +
+  theme_minimal(base_size = 14)
+```
+
+```{r}
+# AIC, BIC, LogLik comparison
+model_comparison <- tibble(
+  Model = c("ARIMA", "ETS"),
+  AIC = c(AIC(fit_arima), AIC(fit_ets)),
+  BIC = c(BIC(fit_arima), BIC(fit_ets)),
+  LogLik = c(logLik(fit_arima), logLik(fit_ets))
+)
+
+print(model_comparison)
+```

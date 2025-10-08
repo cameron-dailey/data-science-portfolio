@@ -1,0 +1,77 @@
+---
+R Script: ROAS Analysis for Steel City Jet Ski Rentals
+---
+
+```{r}
+library(tidyverse)
+library(lubridate)
+library(forecast)
+library(tseries)
+```
+
+```{r}
+# Load data
+daily_revenue <- read_csv("cleaned_daily_revenue.csv")
+daily_spend <- read_csv("cleaned_daily_ad_spend.csv")
+merged <- read_csv("merged_revenue_adspend.csv")
+```
+
+```{r}
+# Clean and prepare dates
+daily_revenue <- daily_revenue %>% mutate(Date = ymd(Date)) %>% arrange(Date)
+daily_revenue <- daily_revenue %>% filter(month(Date) <= 10)
+daily_revenue$Total_Revenue <- pmin(daily_revenue$Total_Revenue, quantile(daily_revenue$Total_Revenue, 0.95))
+daily_spend <- daily_spend %>% mutate(Date = ymd(Date))
+merged <- merged %>% mutate(Date = ymd(Date)) %>% arrange(Date)
+daily_spend <- daily_spend %>% filter(month(Date) <= 10)
+merged <- merged %>% filter(month(Date) <= 10)
+
+
+# Remove the single highest revenue day *only* in October, this point is Jetski sale counted as revenue
+daily_revenue <- daily_revenue %>%
+  filter(month(Date) <= 10) %>%
+  mutate(is_october = month(Date) == 10) %>%
+  mutate(max_october_revenue = ifelse(is_october, max(Total_Revenue[is_october], na.rm = TRUE), NA)) %>%
+  filter(!(is_october & Total_Revenue == max_october_revenue)) %>%
+  select(-is_october, -max_october_revenue)
+```
+
+```{r}
+# ROAS Analysis
+# Filter days with actual spend
+spent_days <- merged %>% filter(Spend_Per_Day > 0)
+```
+
+```{r}
+# Summarize metrics
+total_spend <- sum(spent_days$Spend_Per_Day, na.rm = TRUE)
+total_revenue <- sum(spent_days$Total_Revenue, na.rm = TRUE)
+roas <- total_revenue / total_spend
+cat("\nTotal Revenue:", total_revenue, "\n")
+cat("Total Ad Spend:", total_spend, "\n")
+cat("Total ROAS:", round(roas, 2), "\n")
+
+```
+
+```{r}
+# Plot ROAS over time
+roas_plot <- ggplot(spent_days, aes(x = Date, y = ROAS)) +
+  geom_area(fill = "#a1d99b", alpha = 0.6) +
+  geom_line(color = "#31a354", size = 1.2) +
+  geom_hline(yintercept = 1, linetype = "dashed", color = "gray40") +
+  annotate("text", x = min(spent_days$Date), y = 1.1, label = "Break-even", hjust = 0, size = 3, color = "gray40") +
+  labs(title = "ROAS Over Time (Jetski Campaigns)",
+       x = "Date",
+       y = "Return on Ad Spend (ROAS)",
+       caption = "Area below 1 indicates negative ROI") +
+  theme_minimal(base_size = 12) +
+  theme(plot.title = element_text(face = "bold", size = 14))
+
+print(roas_plot)
+```
+
+```{r}
+# Save filtered ROAS data
+write_csv(spent_days, "r_output_spend_days.csv")
+
+```
