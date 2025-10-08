@@ -78,7 +78,7 @@ Copy code
 ## Contact
 
 **Cameron Dailey**  
- [LinkedIn](https://www.linkedin.com/in/camerondailey)  
+ [LinkedIn](https://www.linkedin.com/in/cameron-dailey-238ab337b)  
 
 ---
 
