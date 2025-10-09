@@ -1,0 +1,8 @@
+tidyverse
+tidytext
+tm
+wordcloud
+syuzhet
+igraph
+ggraph
+topicmodels
