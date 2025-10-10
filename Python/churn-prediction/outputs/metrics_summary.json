@@ -1,0 +1,38 @@
+{
+  "logreg": {
+    "accuracy": 0.807495741056218,
+    "precision": 0.6624365482233503,
+    "recall": 0.5588865096359743,
+    "f1": 0.6062717770034843,
+    "roc_auc": 0.8470820687806346,
+    "pr_auc": 0.639711263229506,
+    "roc_path": "outputs\\roc_curve_logreg.png",
+    "pr_path": "outputs\\pr_curve_logreg.png",
+    "confusion_matrix_path": "outputs\\confusion_matrix_logreg.png",
+    "classification_report_path": "outputs\\classification_report_logreg.txt"
+  },
+  "rf": {
+    "accuracy": 0.7836456558773425,
+    "precision": 0.6181318681318682,
+    "recall": 0.4817987152034261,
+    "f1": 0.5415162454873647,
+    "roc_auc": 0.8246138494583799,
+    "pr_auc": 0.6133054893640728,
+    "roc_path": "outputs\\roc_curve_rf.png",
+    "pr_path": "outputs\\pr_curve_rf.png",
+    "confusion_matrix_path": "outputs\\confusion_matrix_rf.png",
+    "classification_report_path": "outputs\\classification_report_rf.txt"
+  },
+  "xgb": {
+    "accuracy": 0.787052810902896,
+    "precision": 0.6236559139784946,
+    "recall": 0.49678800856531047,
+    "f1": 0.5530393325387366,
+    "roc_auc": 0.8248736550509846,
+    "pr_auc": 0.6169525515460794,
+    "roc_path": "outputs\\roc_curve_xgb.png",
+    "pr_path": "outputs\\pr_curve_xgb.png",
+    "confusion_matrix_path": "outputs\\confusion_matrix_xgb.png",
+    "classification_report_path": "outputs\\classification_report_xgb.txt"
+  }
+}
