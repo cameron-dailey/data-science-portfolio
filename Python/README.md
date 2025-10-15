@@ -11,3 +11,4 @@ Projects:
 - **web-scraper/**: BeautifulSoup-based scraper that reads a local mock HTML and exports a CSV.
 - **feature-scaling-demo/**: Demonstrates the effect of `StandardScaler` and `MinMaxScaler` on numeric data.  
   Includes visual comparisons of scaled distributions and saves plots to `/plots/`.
+- **marketing-mix-model/**: Bayesian Marketing Mix Modeling with PyMC to estimate channel-level ROI, diminishing returns, and optimal budget allocation. Includes synthetic data generation, hierarchical model training, posterior visualization, and budget reallocation simulation.
