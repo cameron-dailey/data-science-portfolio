@@ -1,0 +1,11 @@
+{
+  "budget": 50000,
+  "suggested_allocation_pct": {
+    "meta": 0.0,
+    "google": 100.0,
+    "tv": 0.0,
+    "email": 0.0
+  },
+  "relative_score": 12.643889421357358,
+  "note": "Score is a relative expected multiplier (heuristic). For production, recompute adstock/hill from spend."
+}

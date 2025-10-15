@@ -1,0 +1,34 @@
+{
+  "channels": [
+    "meta",
+    "google",
+    "tv",
+    "email"
+  ],
+  "true_params": {
+    "lam": {
+      "meta": 0.5,
+      "google": 0.4,
+      "tv": 0.7,
+      "email": 0.2
+    },
+    "alpha": {
+      "meta": 1.2,
+      "google": 1.1,
+      "tv": 1.4,
+      "email": 1.0
+    },
+    "theta": {
+      "meta": 12000.0,
+      "google": 14000.0,
+      "tv": 30000.0,
+      "email": 1500.0
+    },
+    "coefs": {
+      "meta": 0.25,
+      "google": 0.28,
+      "tv": 0.18,
+      "email": 0.1
+    }
+  }
+}
