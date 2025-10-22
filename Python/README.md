@@ -11,3 +11,4 @@ Projects:
 - **web-scraper/**: BeautifulSoup-based scraper that reads a local mock HTML and exports a CSV.
 - **feature-scaling-demo/**: Demonstrates the effect of `StandardScaler` and `MinMaxScaler` on numeric data.  
   Includes visual comparisons of scaled distributions and saves plots to `/plots/`.
+- **credit-risk-model/**: Predicts loan default risk using XGBoost with SMOTE balancing and SHAP explainability.
